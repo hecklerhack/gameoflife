@@ -32,14 +32,17 @@ function GameOfLife() {
   const handleClear = () => {
     setIsRunning(false);
     setGeneration(0);
-    setGrid(prevGrid => {
-      return prevGrid.map(row => row.fill(false));
-    });
+    const newGrid = grid.map(row => row.fill(false));
+    setGrid(newGrid);
+    drawGrid();
   };
 
   const handleRandomize = () => {
     setIsRunning(false);
     setGeneration(0);
+    setGrid(prevGrid => {
+      return prevGrid.map(row => row.fill(false));
+    });
     drawGrid();
     setGrid(prevGrid => {
       return prevGrid.map(row =>
@@ -50,10 +53,13 @@ function GameOfLife() {
 
   const handleStart = () => {
     setIsRunning(true);
+    requestRef.current = requestAnimationFrame(updateGrid);
+    console.log('isrunning');
   };
 
   const handleStop = () => {
     setIsRunning(false);
+    cancelAnimationFrame(requestRef.current);
   };
 
   const countNeighbors = (row, col) => {
@@ -91,7 +97,8 @@ function GameOfLife() {
       }
       return newGrid;
     });
-    setGeneration(prevGeneration => prevGeneration + 1);
+    setGeneration(generation + 1);
+    console.log(generation);
     drawGrid();
   };
 
@@ -99,7 +106,6 @@ const drawGrid = () => {
   const canvas = canvasRef.current;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  console.log(grid);
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
       if (grid[i][j]) {
@@ -111,13 +117,13 @@ const drawGrid = () => {
     }
   }
 };
-useEffect(() => {
-    if (isRunning) {
-      requestRef.current = requestAnimationFrame(updateGrid);
-      drawGrid();
-    }
-    return () => cancelAnimationFrame(requestRef.current);
-  }, [isRunning]);
+// useEffect(() => {
+//     if (isRunning) {
+//       requestRef.current = requestAnimationFrame(updateGrid);
+//       console.log('isrunning');
+//     }
+//     //return () => cancelAnimationFrame(requestRef.current);
+//   }, [isRunning]);
 
   return (
     <div>
@@ -137,7 +143,7 @@ useEffect(() => {
       <div>
         <button onClick={handleStart}>Start</button>
         <button onClick={handleStop}>Stop</button>
-        <button onClick={handleClear}>Clear</button>
+        <button onClick={() => handleClear()}>Clear</button>
         <button onClick={handleRandomize}>Randomize</button>
         <span>Generation: {generation}</span>
       </div>
